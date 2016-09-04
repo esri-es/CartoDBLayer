@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <link type='text/css' href='http://js.arcgis.com/3.12/esri/css/esri.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
     <style type="text/css">
       .layertoc {
         position: fixed;
@@ -28,13 +28,80 @@
         padding: 0;
       }
     </style>
-    <title>CartoDB Sample</title>
+    <title>CartoDBLayer Sample</title>
   </head>
   <body class="nihilo">
     <div id="map"></div>
     <script src="http://cdn-geoweb.s3.amazonaws.com/terraformer/1.0.4/terraformer.min.js"></script>
     <script src="http://cdn-geoweb.s3.amazonaws.com/terraformer-arcgis-parser/1.0.4/terraformer-arcgis-parser.min.js"></script>
-    <script src="//js.arcgis.com/3.12compact"></script>
-    <script src="main.js"></script>
+    <script src="//js.arcgis.com/3.17compact"></script>
+    <script>
+      require([
+        'esri/map',
+        'esri/graphicsUtils',
+        'esri/symbols/SimpleFillSymbol',
+        'esri/symbols/SimpleLineSymbol',
+        'esri/symbols/SimpleMarkerSymbol',
+        'esri/Color',
+        './../CartoDBLayer.js',
+        'dojo/domReady!'
+      ], function(
+        Map, graphicsUtils,
+        SimpleFillSymbol,
+        SimpleLineSymbol,
+        SimpleMarkerSymbol,
+        Color,
+        CartoDBLayer
+      ) {
+        var map = new Map('map', {
+          center: [-3, 40],
+          zoom: 4,
+          basemap: 'streets-navigation-vector'
+        });
+
+        var marker = SimpleMarkerSymbol();
+        marker.setPath("M16,3.5c-4.142,0-7.5,3.358-7.5,7.5c0,4.143,7.5,18.121,7.5,18.121S23.5,15.143,23.5,11C23.5,6.858,20.143,3.5,16,3.5z M16,14.584c-1.979,0-3.584-1.604-3.584-3.584S14.021,7.416,16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z");
+        marker.setColor(new Color([92, 92, 92, 1]));
+        marker.setAngle(-1);
+        marker.setStyle(SimpleMarkerSymbol.STYLE_PATH);
+
+        var params = {
+          user: 'hhkaos',
+          symbolDictionary: {
+            /*
+            polygon: new SimpleFillSymbol(
+              SimpleFillSymbol.STYLE_SOLID,
+              new SimpleLineSymbol(
+                SimpleLineSymbol.STYLE_SOLID,
+                new Color([153, 50, 204]), 2),
+                new Color([255, 255, 0, 0.25])
+            )
+            */
+            point: marker
+          }
+        };
+
+        var cartodbLayer = new CartoDBLayer(params);
+
+        map.addLayers([cartodbLayer]);
+
+        // Get dataset from:
+        // https://hhkaos.carto.com/tables/ne_10m_airports/public
+        var query = "SELECT * FROM public.ne_10m_airports";
+        /*
+        // Set extent to features
+        cartodbLayer.on('querySuccess', function (features) {
+
+          if (features.length > 0) {
+            map.setExtent(graphicsUtils.graphicsExtent(features));
+          }
+
+        });
+        */
+
+        cartodbLayer.query(query);
+
+      });
+    </script>
   </body>
 </html>
